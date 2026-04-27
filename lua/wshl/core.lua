@@ -18,13 +18,38 @@ local function wshl_wsid(wsid, dep)
 end
 
 if SERVER then
-    function wshl(wsid, dep, load = true)
+    local wshl_cmd = CreateConVar("wshl_cmd", 0, FCVAR_CHEAT)
+
+    function wshl(wsid, dep, load)
         WSHL.Net:Start('wshl_send_wsid')
         net.WriteString(wsid)
         net.WriteBool(dep)
         net.Broadcast()
         if load then wshl_wsid(wsid, dep) end
     end
+
+    concommand.Add('wshl_hotload', function(ply, cmd, args)
+        if not wshl_cmd:GetBool() then return end
+        if ply:IsSuperAdmin() then
+            local wsid = args[1]
+
+            if not wsid then
+                ply:PrintMessage(HUD_PRINTCONSOLE, '[wshl_hotload] Error: Workshop ID not provided.\n')
+            else
+                steamworks.FileInfo(wsid, function(result)
+                    if not result or result.title == 'Hidden addon' then
+                        return ply:PrintMessage(HUD_PRINTCONSOLE, '[wshl_hotload] Error: Addon is non-existent, hidden, or Steam Servers are offline.\n')
+                    end
+
+                    wshl(wsid, false, true)
+
+                    ply:PrintMessage(HUD_PRINTCONSOLE, '[WSHL] Addon "' .. (result.title or wsid) .. '" requested!\n')
+                end)
+            end
+        else
+            ply:PrintMessage(HUD_PRINTCONSOLE, '[wshl_hotload] Error: Command is only available to super admins.\n')
+        end
+    end)
 else
 
     WSHL.Net:Receive('wshl_send_wsid', function()
