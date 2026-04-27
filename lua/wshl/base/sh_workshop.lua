@@ -26,6 +26,7 @@ function WSHL.Workshop:Hotload(...)
             local pass, files = game.MountGMA(path)
 
             if pass then
+                if SERVER then resource.AddWorkshop(wsid) end
                 table.Add(bundlefiles, files)
                 name = name .. WSHL.Workshop:GetGMATitle(gma) .. ', '
             end
@@ -34,18 +35,14 @@ function WSHL.Workshop:Hotload(...)
 
             if count >= num then
                 name = string.sub(name, 1, -3)
-                    
-                local json = util.Compress(util.TableToJSON(bundlefiles))
-                local len = #json
-
-                WSHL.Net:Start('wshl_initialize_bundle')
-                net.WriteUInt(len, 16)
-                net.WriteData(json, len)
-                net.WriteString(name)
-                net.SendToServer()
 
                 timer.Simple(0.5, function()
                     local bundle = WSHL.Bundle:Create(bundlefiles, name)
+                    if SERVER then
+                        ServerLog('Starting initialization...')
+                        ServerLog('Bundle Addons: ' .. bundle.Name)
+                        ServerLog(string.format('Bundle Information: %s lua files, %s materials, %s models, and %s sounds.', binfo.lua, binfo.materials, binfo.models, binfo.sound))
+                    end
                     bundle:Initialize()
 
                     for k, wsid in ipairs(wsids) do
