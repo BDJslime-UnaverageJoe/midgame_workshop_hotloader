@@ -1,79 +1,61 @@
-if SERVER then
-    WSHL.Net:Receive('wshl_initialize_bundle', function(len, ply)
-        if len > 512000  then return end
-        -- If the length is over 64kb then the bundle has way too many files
-        
-        if ply:IsListenServerHost() then
-            local data = net.ReadData(net.ReadUInt(16))
-            local files = util.JSONToTable(util.Decompress(data))
-            local bundle = WSHL.Bundle:Create(files, net.ReadString())
+if SERVER and game.IsDedicated() then
+    require("workshop") -- Server needs gmsv_workshop module
+end
+WSHL.ErrorColor = Color(255, 125, 125)
 
-            local binfo = bundle.Information
+function WSHL.Workshop:Hotload(...)
+    local failed = false
+    local wsids = {...}
+    local num = #wsids
+    local count = 0
+
+    local bundlefiles = {}
+    local name = ''
+
+    for i = 1, num do
+        if failed then break end
+
+        local wsid = wsids[i]
+
+        steamworks.DownloadUGC(wsid, function(path, gma)
+            if not path or not gma then
+                failed = true
+                return MsgC(WSHL.ErrorColor, '[WSHL] Whoops! Addon ' .. wsid .. ' could not download. Aborting... (Offline, not enough allocation, or addon is hidden?)')
+            end
             
-            bundle:Message('Starting initialization...')
-            bundle:Message('Bundle Addons: ' .. bundle.Name)
-            bundle:Message(string.format('Bundle Information: %s lua files, %s materials, %s models, and %s sounds.', binfo.lua, binfo.materials, binfo.models, binfo.sound))
+            local pass, files = game.MountGMA(path)
 
-            bundle:Initialize()
-        end
-    end)
-else
-    WSHL.ErrorColor = Color(255, 125, 125)
+            if pass then
+                table.Add(bundlefiles, files)
+                name = name .. WSHL.Workshop:GetGMATitle(gma) .. ', '
+            end
 
-    function WSHL.Workshop:Hotload(...)
-        local failed = false
-        local wsids = {...}
-        local num = #wsids
-        local count = 0
+            count = count + 1
 
-        local bundlefiles = {}
-        local name = ''
+            if count >= num then
+                name = string.sub(name, 1, -3)
+                    
+                local json = util.Compress(util.TableToJSON(bundlefiles))
+                local len = #json
 
-        for i = 1, num do
-            if failed then break end
+                WSHL.Net:Start('wshl_initialize_bundle')
+                net.WriteUInt(len, 16)
+                net.WriteData(json, len)
+                net.WriteString(name)
+                net.SendToServer()
 
-            local wsid = wsids[i]
+                timer.Simple(0.5, function()
+                    local bundle = WSHL.Bundle:Create(bundlefiles, name)
+                    bundle:Initialize()
 
-            steamworks.DownloadUGC(wsid, function(path, gma)
-                if not path or not gma then
-                    failed = true
-                    return MsgC(WSHL.ErrorColor, '[WSHL] Whoops! Addon ' .. wsid .. ' could not download. Aborting... (Offline, not enough allocation, or addon is hidden?)')
-                end
-                
-                local pass, files = game.MountGMA(path)
-
-                if pass then
-                    table.Add(bundlefiles, files)
-                    name = name .. WSHL.Workshop:GetGMATitle(gma) .. ', '
-                end
-
-                count = count + 1
-
-                if count >= num then
-                    name = string.sub(name, 1, -3)
-                        
-                    local json = util.Compress(util.TableToJSON(bundlefiles))
-                    local len = #json
-
-                    WSHL.Net:Start('wshl_initialize_bundle')
-                    net.WriteUInt(len, 16)
-                    net.WriteData(json, len)
-                    net.WriteString(name)
-                    net.SendToServer()
-
-                    timer.Simple(0.5, function()
-                        local bundle = WSHL.Bundle:Create(bundlefiles, name)
-                        bundle:Initialize()
-
-                        for k, wsid in ipairs(wsids) do
-                            WSHL.Addons.Unmounted[wsid] = nil
-                            WSHL.Addons.Mounted[wsid] = true
-                            WSHL.Addons.All[wsid] = true
-                        end
-                    end)
-                end
-            end)
-        end
+                    for k, wsid in ipairs(wsids) do
+                        WSHL.Addons.Unmounted[wsid] = nil
+                        WSHL.Addons.Mounted[wsid] = true
+                        WSHL.Addons.All[wsid] = true
+                    end
+                end)
+            end
+        end)
     end
 end
 

@@ -732,6 +732,7 @@ function Bundle:Initialize()
             local sendname = string.sub(realmTag .. ' [' .. self.Name .. ']\n', 1, 500)
             local sendstack = string.sub(errors, 1, 5000)
 
+            --[[
             -- Send the errors that were found during the hotload to gerror
             -- If will be truncated if it's too long, though I think it will be enough for me to get the idea of what's wrong.
             http.Post('https://gerror.xalalau.com/add.php', {
@@ -743,6 +744,7 @@ function Bundle:Initialize()
                 quantity = '1',
                 versionDate = WSHL.VersionDate
             })
+            ]]--
 
             MsgC(Color(150, 250, 255), errors .. '\n')
             --self:Error('Bundle Errors:\n\n' .. errors .. '\n\nStack Traceback:')

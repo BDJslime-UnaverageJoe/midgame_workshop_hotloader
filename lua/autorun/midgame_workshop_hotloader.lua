@@ -1,5 +1,3 @@
-if game.IsDedicated() then return end
-
 AddCSLuaFile('wshl/core.lua')
 
 if file.Exists('wshl/core.lua', 'LUA') then

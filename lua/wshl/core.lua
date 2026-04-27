@@ -1,54 +1,38 @@
 local engine_GetAddons = engine.GetAddons
 local addons = engine_GetAddons()
 
+local function wshl_wsid(wsid, dep)
+    if not dep then
+        return WSHL.Workshop:Hotload(wsid)
+    end
+
+    local wsids = {wsid}
+
+    WSHL.Workshop:GetRequiredAddons(wsid, function(requiredAddonIDs)
+        for i = 1, #requiredAddonIDs do
+            wsids[#wsids + 1] = requiredAddonIDs[i]
+        end
+
+        WSHL.Workshop:Hotload(unpack(wsids))
+    end)
+end
+
 if SERVER then
-    WSHL.Net:Receive('wshl_send_wsid', function(len, ply)
-        if ply:IsListenServerHost() then
-            local wsid = net.ReadString()
-
-            WSHL.Net:Start('wshl_send_wsid')
-            net.WriteString(wsid)
-            net.Broadcast()
-        end
-    end)
+    function wshl(wsid, dep, load = true)
+        WSHL.Net:Start('wshl_send_wsid')
+        net.WriteString(wsid)
+        net.WriteBool(dep)
+        net.Broadcast()
+        if load then wshl_wsid(wsid, dep) end
+    end
 else
-    local allowHotloadRequirements = CreateClientConVar('wshl_hotload_requirements', 1)
-
-    hook.Add('GameContentChanged', 'wshl_grabnewaddon', function()
-        local wsid
-        
-        for k, addon in ipairs(engine_GetAddons()) do
-            local id = addon.wsid
-
-            if (addon.mounted and WSHL.Addons.Unmounted[id]) or (not WSHL.Addons.All[id] and not WSHL.Addons.Mounted[id]) then
-                wsid = id
-                break
-            end
-        end
-
-        if wsid then
-            WSHL.Net:Start('wshl_send_wsid')
-            net.WriteString(wsid)
-            net.SendToServer()
-        end
-    end)
 
     WSHL.Net:Receive('wshl_send_wsid', function()
         local wsid = net.ReadString()
 
-        if not allowHotloadRequirements:GetBool() then
-            return WSHL.Workshop:Hotload(wsid)
-        end
+        local dep = net.ReadBool()
 
-        local wsids = {wsid}
-
-        WSHL.Workshop:GetRequiredAddons(wsid, function(requiredAddonIDs)
-            for i = 1, #requiredAddonIDs do
-                wsids[#wsids + 1] = requiredAddonIDs[i]
-            end
-
-            WSHL.Workshop:Hotload(unpack(wsids))
-        end)
+        wshl_wsid(wsid, dep)
     end)
 
     local allowHints = CreateClientConVar('wshl_receive_hints', 1)
