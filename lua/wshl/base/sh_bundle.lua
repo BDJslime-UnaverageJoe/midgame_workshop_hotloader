@@ -673,7 +673,7 @@ do
     end)
 end
 
-function Bundle:Initialize()
+function Bundle:Initialize(simple)
     local time = SysTime()
 
     self:InitializeAutorun()
@@ -682,12 +682,14 @@ function Bundle:Initialize()
     self:InitializeTools()
     self:InitializeScriptedClasses('entities')
     self:InitializeScriptedClasses('effects')
-
-    self:CallHooks('PreGamemodeLoaded')
-    self:CallHooks('OnGamemodeLoaded')
-    self:CallHooks('PostGamemodeLoaded')
-    self:CallHooks('Initialize')
-    self:CallHooks('InitPostEntity')
+    
+    if not simple then 
+        self:CallHooks('PreGamemodeLoaded')
+        self:CallHooks('OnGamemodeLoaded')
+        self:CallHooks('PostGamemodeLoaded')
+        self:CallHooks('Initialize')
+        self:CallHooks('InitPostEntity')
+    end
 
     self.InitPostEntity = true
 
