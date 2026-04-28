@@ -682,21 +682,22 @@ function Bundle:Initialize(simple)
     self:InitializeTools()
     self:InitializeScriptedClasses('entities')
     self:InitializeScriptedClasses('effects')
-    
+
     if not simple then 
         self:CallHooks('PreGamemodeLoaded')
         self:CallHooks('OnGamemodeLoaded')
         self:CallHooks('PostGamemodeLoaded')
         self:CallHooks('Initialize')
         self:CallHooks('InitPostEntity')
-    end
 
-    self.InitPostEntity = true
+        self.InitPostEntity = true
 
-    if SERVER then
-        for k, ply in ipairs(player.GetAll()) do
-            self:CallHooks('PlayerInitialSpawn', ply, false)
+        if SERVER then
+            for k, ply in ipairs(player.GetAll()) do
+                self:CallHooks('PlayerInitialSpawn', ply, false)
+            end
         end
+
     end
 
     time = math.Round(SysTime() - time, 3)
