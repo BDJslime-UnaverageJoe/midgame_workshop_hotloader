@@ -3,7 +3,7 @@ if SERVER and game.IsDedicated() then
 end
 WSHL.ErrorColor = Color(255, 125, 125)
 
-function WSHL.Workshop:Hotload(...)
+function WSHL.Workshop:Hotload(simple, ...)
     local failed = false
     local wsids = {...}
     local num = #wsids
@@ -43,7 +43,7 @@ function WSHL.Workshop:Hotload(...)
                         ServerLog('Bundle Addons: ' .. bundle.Name)
                         ServerLog(string.format('Bundle Information: %s lua files, %s materials, %s models, and %s sounds.', binfo.lua, binfo.materials, binfo.models, binfo.sound))
                     end
-                    bundle:Initialize()
+                    bundle:Initialize(simple)
 
                     for k, wsid in ipairs(wsids) do
                         WSHL.Addons.Unmounted[wsid] = nil

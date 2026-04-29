@@ -1,9 +1,9 @@
 local engine_GetAddons = engine.GetAddons
 local addons = engine_GetAddons()
 
-local function wshl_wsid(wsid, dep)
+local function wshl_wsid(wsid, dep, simple)
     if not dep then
-        return WSHL.Workshop:Hotload(wsid)
+        return WSHL.Workshop:Hotload(simple, wsid)
     end
 
     local wsids = {wsid}
@@ -13,7 +13,7 @@ local function wshl_wsid(wsid, dep)
             wsids[#wsids + 1] = requiredAddonIDs[i]
         end
 
-        WSHL.Workshop:Hotload(unpack(wsids))
+        WSHL.Workshop:Hotload(simple, unpack(wsids))
     end)
 end
 

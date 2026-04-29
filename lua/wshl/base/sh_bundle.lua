@@ -674,15 +674,19 @@ do
 end
 
 function Bundle:Initialize(simple)
+    simple = simple or 0
     local time = SysTime()
 
     self:InitializeAutorun()
-    self:InitializeScriptedClasses('vgui')
-    self:InitializeScriptedClasses('weapons')
-    self:InitializeTools()
-    self:InitializeScriptedClasses('entities')
-    self:InitializeScriptedClasses('effects')
 
+    if simple < 2 then
+        self:InitializeScriptedClasses('vgui')
+        self:InitializeScriptedClasses('weapons')
+        self:InitializeTools()
+        self:InitializeScriptedClasses('entities')
+        self:InitializeScriptedClasses('effects')
+    end
+            
     if not simple then 
         self:CallHooks('PreGamemodeLoaded')
         self:CallHooks('OnGamemodeLoaded')
