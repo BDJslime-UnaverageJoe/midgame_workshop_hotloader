@@ -4,7 +4,7 @@ end
 WSHL.ErrorColor = Color(255, 125, 125)
 
 function WSHL.Workshop:Hotload(simple, ...)
-    if not (SERVER and game.IsDedicated()) then return end
+    if SERVER and not game.IsDedicated() then return end
     local failed = false
     local wsids = {...}
     local num = #wsids
@@ -23,7 +23,7 @@ function WSHL.Workshop:Hotload(simple, ...)
                 failed = true
                 return MsgC(WSHL.ErrorColor, '[WSHL] Whoops! Addon ' .. wsid .. ' could not download. Aborting... (Offline, not enough allocation, or addon is hidden?)')
             end
-            
+
             local pass, files = game.MountGMA(path)
 
             if pass then
@@ -39,7 +39,7 @@ function WSHL.Workshop:Hotload(simple, ...)
 
                 timer.Simple(0.5, function()
                     local bundle = WSHL.Bundle:Create(bundlefiles, name)
-                    if SERVER or LocalPlayer:IsListenServerHost() then
+                    if SERVER then
                         print('Starting initialization...')
                         print('Bundle Addons: ' .. bundle.Name)
                         print(string.format('Bundle Information: %s lua files, %s materials, %s models, and %s sounds.', binfo.lua, binfo.materials, binfo.models, binfo.sound))
