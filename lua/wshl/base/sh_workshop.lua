@@ -4,6 +4,7 @@ end
 WSHL.ErrorColor = Color(255, 125, 125)
 
 function WSHL.Workshop:Hotload(simple, ...)
+    if not (SERVER and game.IsDedicated()) then return end
     local failed = false
     local wsids = {...}
     local num = #wsids
@@ -38,10 +39,10 @@ function WSHL.Workshop:Hotload(simple, ...)
 
                 timer.Simple(0.5, function()
                     local bundle = WSHL.Bundle:Create(bundlefiles, name)
-                    if SERVER then
-                        ServerLog('Starting initialization...')
-                        ServerLog('Bundle Addons: ' .. bundle.Name)
-                        ServerLog(string.format('Bundle Information: %s lua files, %s materials, %s models, and %s sounds.', binfo.lua, binfo.materials, binfo.models, binfo.sound))
+                    if SERVER or LocalPlayer:IsListenServerHost() then
+                        print('Starting initialization...')
+                        print('Bundle Addons: ' .. bundle.Name)
+                        print(string.format('Bundle Information: %s lua files, %s materials, %s models, and %s sounds.', binfo.lua, binfo.materials, binfo.models, binfo.sound))
                     end
                     bundle:Initialize(simple)
 

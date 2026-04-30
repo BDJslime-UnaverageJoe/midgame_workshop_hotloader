@@ -20,12 +20,12 @@ end
 if SERVER then
     local wshl_cmd = CreateConVar("wshl_cmd", 0, FCVAR_CHEAT)
 
-    function wshl(wsid, dep, load)
+    function wshl(wsid, dep, load, simple)
         WSHL.Net:Start('wshl_send_wsid')
         net.WriteString(wsid)
         net.WriteBool(dep)
         net.Broadcast()
-        if load then wshl_wsid(wsid, dep) end
+        if load then wshl_wsid(wsid, dep, simple) end
     end
 
     concommand.Add('wshl_hotload', function(ply, cmd, args)
@@ -59,8 +59,8 @@ else
 
         wshl_wsid(wsid, dep)
     end)
-
-    local allowHints = CreateClientConVar('wshl_receive_hints', 1)
+    
+    local allowHints = CreateClientConVar('wshl_receive_hints', 0)
 
     if not allowHints:GetBool() then return end
 
