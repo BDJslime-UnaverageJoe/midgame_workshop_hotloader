@@ -30,13 +30,13 @@ function WSHL.Workshop:Hotload(simple, ...)
                 if SERVER then resource.AddWorkshop(wsid) end
                 table.Add(bundlefiles, files)
                 name = name .. WSHL.Workshop:GetGMATitle(gma)
-                WSHL.Addons.Path[wsid] = name
+                WSHL.Addons.Path[wsid] = WSHL.Workshop:GetGMATitle(gma)
             end
 
             count = count + 1
 
             if count >= num then
-                name = string.sub(name, 1, -3)
+                name = string.sub(name, 1, -3) .. ', '
 
                 timer.Simple(0.5, function()
                     local bundle = WSHL.Bundle:Create(bundlefiles, name)
