@@ -29,7 +29,8 @@ function WSHL.Workshop:Hotload(simple, ...)
             if pass then
                 if SERVER then resource.AddWorkshop(wsid) end
                 table.Add(bundlefiles, files)
-                name = name .. WSHL.Workshop:GetGMATitle(gma) .. ', '
+                name = name .. WSHL.Workshop:GetGMATitle(gma)
+                WSHL.Addons.Path[wsid] = name
             end
 
             count = count + 1

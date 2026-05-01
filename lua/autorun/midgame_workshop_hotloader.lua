@@ -10,6 +10,7 @@ if file.Exists('wshl/core.lua', 'LUA') then
         Addons = {
             Unmounted = {},
             Mounted = {},
+            Path = {},
             All = {}
         }
     }
