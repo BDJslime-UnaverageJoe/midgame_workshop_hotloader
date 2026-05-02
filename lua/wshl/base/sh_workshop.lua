@@ -1,5 +1,25 @@
-if SERVER and game.IsDedicated() then
-    require("workshop") -- Server needs gmsv_workshop module
+if SERVER then
+    if game.IsDedicated() then
+        require("workshop") -- Server needs gmsv_workshop module
+    else
+        util.AddNetworkString("wshl_initialize_bundle")
+        WSHL.Net:Receive('wshl_initialize_bundle', function(len, ply)
+        if ply:IsListenServerHost() then
+            local len = net.ReadUInt(16)
+            local data = net.ReadData(len)
+            local files = util.JSONToTable(util.Decompress(data))
+            local bundle = WSHL.Bundle:Create(files, net.ReadString())
+
+            local binfo = bundle.Information
+            
+            bundle:Message('Starting initialization...')
+            bundle:Message('Bundle Addons: ' .. bundle.Name)
+            bundle:Message(string.format('Bundle Information: %s lua files, %s materials, %s models, and %s sounds.', binfo.lua, binfo.materials, binfo.models, binfo.sound))
+
+            bundle:Initialize()
+        end
+    end)
+    end
 end
 WSHL.ErrorColor = Color(255, 125, 125)
 
@@ -40,10 +60,18 @@ function WSHL.Workshop:Hotload(simple, ...)
 
                 timer.Simple(0.5, function()
                     local bundle = WSHL.Bundle:Create(bundlefiles, name)
-                    if SERVER then
+                    if SERVER and not game.IsDedicated() then
                         print('Starting initialization...')
                         print('Bundle Addons: ' .. bundle.Name)
                         print(string.format('Bundle Information: %s lua files, %s materials, %s models, and %s sounds.', binfo.lua, binfo.materials, binfo.models, binfo.sound))
+                    elseif LocalPlayer():IsListenServerHost() then
+                        local json = util.Compress(util.TableToJSON(bundlefiles))
+                        local len = #json
+                        WSHL.Net:Start('wshl_initialize_bundle')
+                            net.WriteUInt(len, 16)
+                            net.WriteData(json, len)
+                            net.WriteString(name)
+                            net.SendToServer()
                     end
                     bundle:Initialize(simple)
 
