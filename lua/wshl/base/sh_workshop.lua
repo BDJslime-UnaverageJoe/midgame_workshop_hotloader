@@ -65,7 +65,7 @@ function WSHL.Workshop:Hotload(simple, ...)
                         print('Starting initialization...')
                         print('Bundle Addons: ' .. bundle.Name)
                         print(string.format('Bundle Information: %s lua files, %s materials, %s models, and %s sounds.', binfo.lua, binfo.materials, binfo.models, binfo.sound))
-                    elseif LocalPlayer():IsListenServerHost() then
+                    elseif CLIENT and LocalPlayer():IsListenServerHost() then
                         local json = util.Compress(util.TableToJSON(bundlefiles))
                         local len = #json
                         WSHL.Net:Start('wshl_initialize_bundle')
