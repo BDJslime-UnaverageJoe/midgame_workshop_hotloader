@@ -31,7 +31,7 @@ function WSHL.Workshop:Hotload(simple, ...)
     local count = 0
 
     local bundlefiles = {}
-    local name = ''
+    local bundlename = ''
 
     for i = 1, num do
         if failed then break end
@@ -49,17 +49,18 @@ function WSHL.Workshop:Hotload(simple, ...)
             if pass then
                 if SERVER then resource.AddWorkshop(wsid) end
                 table.Add(bundlefiles, files)
-                name = name .. WSHL.Workshop:GetGMATitle(gma)
-                WSHL.Addons.Path[wsid] = WSHL.Workshop:GetGMATitle(gma)
+                local name = WSHL.Workshop:GetGMATitle(gma)
+                bundlename = bundlename .. name
+                WSHL.Addons.Path[wsid] = name
             end
 
             count = count + 1
 
             if count >= num then
-                name = string.sub(name, 1, -3) .. ', '
+                bundlename = string.sub(bundlename, 1, -3) .. ', '
 
                 timer.Simple(0.5, function()
-                    local bundle = WSHL.Bundle:Create(bundlefiles, name)
+                    local bundle = WSHL.Bundle:Create(bundlefiles, bundlename)
                     if SERVER and not game.IsDedicated() then
                         print('Starting initialization...')
                         print('Bundle Addons: ' .. bundle.Name)
@@ -70,7 +71,7 @@ function WSHL.Workshop:Hotload(simple, ...)
                         WSHL.Net:Start('wshl_initialize_bundle')
                             net.WriteUInt(len, 16)
                             net.WriteData(json, len)
-                            net.WriteString(name)
+                            net.WriteString(bundlename)
                             net.SendToServer()
                     end
                     bundle:Initialize(simple)
