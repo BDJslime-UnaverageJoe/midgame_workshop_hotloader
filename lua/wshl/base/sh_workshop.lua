@@ -52,6 +52,7 @@ function WSHL.Workshop:Hotload(simple, ...)
                 local name = WSHL.Workshop:GetGMATitle(gma)
                 bundlename = bundlename .. name
                 WSHL.Addons.Path[wsid] = name
+                hook.Run("WSHL.AddonMounted", wsid, name, files)
             end
 
             count = count + 1
